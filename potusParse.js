@@ -8,7 +8,19 @@ rp(url)
     // success!
     const $ = cheerio.load(html);
     console.log($('tr > th > .fn').text());
-    console.log($('th.infobox-label:contains("Born")').next('td').text());
+    let birthdayLongDateFormat = '';
+
+    $('th.infobox-label:contains("Born")').next('td').contents().each((i, el) => {
+      if (el.type === 'text') {
+        birthdayLongDateFormat = $(el).text().trim();
+        return false;
+      }
+    })
+
+    const date = new Date(birthdayLongDateFormat);
+    const isoBirthday = date.toISOString().split("T")[0];
+
+    console.log(isoBirthday);
   })
   .catch((err) => {
     // handle error
