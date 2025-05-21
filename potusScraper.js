@@ -1,6 +1,9 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
+const pLimit = require('p-limit').default;
+const limit = pLimit(24); // I arrived at this number entirely by guesswork and it was the best value I found. 
+
 const potusParse = require('./potusParse');
 
 const url = 'https://en.wikipedia.org/wiki/List_of_Presidents_of_the_United_States';
@@ -22,7 +25,7 @@ const presidents = async () => {
     const results = await Promise.all(
       wikiUrls.map((url) => {
         let completeUrl = 'https://en.wikipedia.org' + url;
-        return potusParse(completeUrl);
+        return limit(() => potusParse(completeUrl));
       })
     ); 
 
