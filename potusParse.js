@@ -1,29 +1,32 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
 
-const url = 'https://en.wikipedia.org/wiki/George_Washington';
+const potusParse = (url) => {
+  return rp(url)
+    .then((html) => {
+      const $ = cheerio.load(html);
 
-rp(url) 
-  .then((html) => {
-    // success!
-    const $ = cheerio.load(html);
-    console.log($('tr > th > .fn').text());
-    let birthdayLongDateFormat = '';
+      const name = $('tr > th > .fn').text();
 
-    $('th.infobox-label:contains("Born")').next('td').contents().each((i, el) => {
-      if (el.type === 'text') {
-        birthdayLongDateFormat = $(el).text().trim();
-        return false;
-      }
+      const birthday = new Date(
+        $('th.infobox-label:contains("Born")')
+          .next('td')
+          .contents()
+          .filter((i, el) => el.type === 'text')[0]
+          .data
+          .trim()
+        )
+        .toISOString()
+        .split("T")[0];
+
+      return {
+        name: name,
+        birthday: birthday,
+      };
     })
+    .catch((err) => {
+      throw new Error(err.message);
+    })
+};
 
-    const date = new Date(birthdayLongDateFormat);
-    const isoBirthday = date.toISOString().split("T")[0];
-
-    console.log(isoBirthday);
-  })
-  .catch((err) => {
-    // handle error
-    console.log(err);
-  })
-
+module.exports = potusParse;
